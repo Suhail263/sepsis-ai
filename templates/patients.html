@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Patients — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="padding:32px 0 60px;">
+  <div class="d-flex align-items-center justify-content-between mb-4 fade-in-up">
+    <div>
+      <div class="section-badge"><i class="fa-solid fa-users"></i> Patient Records</div>
+      <h2 class="section-title">All <span class="accent">Patients</span></h2>
+    </div>
+    <a href="{{ url_for('assess') }}" class="btn-glow">
+      <i class="fa-solid fa-plus me-2"></i>New Assessment
+    </a>
+  </div>
+
+  <div class="glass-card fade-in-up delay-1">
+    {% if patients.items %}
+    <div class="table-responsive">
+      <table class="table table-glass mb-0">
+        <thead>
+          <tr>
+            <th>#</th><th>Patient Name</th><th>Age</th><th>Gender</th>
+            <th>Infection Source</th><th>Latest Risk</th><th>Date</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pat in patients.items %}
+          {% set latest = pat.predictions|sort(attribute='created_at')|last if pat.predictions else none %}
+          {% set risk_map = {'No Sepsis':'risk-none','Mild Risk':'risk-mild','Moderate Risk':'risk-moderate','High Risk':'risk-high','Critical Risk':'risk-critical'} %}
+          <tr>
+            <td style="color:rgba(255,255,255,.4);font-size:.82rem;">{{ pat.id }}</td>
+            <td style="font-weight:600;">
+              <i class="fa-solid fa-user-injured me-2" style="color:var(--accent);"></i>{{ pat.patient_name }}
+            </td>
+            <td style="color:rgba(255,255,255,.7);">{{ pat.age }}</td>
+            <td style="color:rgba(255,255,255,.7);">{{ pat.gender }}</td>
+            <td style="color:rgba(255,255,255,.6);font-size:.85rem;">{{ pat.infection_source or '—' }}</td>
+            <td>
+              {% if latest %}
+              <span class="risk-badge {{ risk_map.get(latest.risk_level,'risk-none') }}" style="font-size:.75rem;padding:4px 10px;">
+                {{ latest.risk_level }}
+              </span>
+              {% else %}
+              <span style="color:rgba(255,255,255,.35);font-size:.82rem;">No prediction</span>
+              {% endif %}
+            </td>
+            <td style="color:rgba(255,255,255,.45);font-size:.82rem;">{{ pat.created_at.strftime('%d %b %Y') }}</td>
+            <td>
+              <a href="{{ url_for('patient_detail', pid=pat.id) }}" class="btn-outline-glass" style="padding:4px 12px;font-size:.78rem;">
+                <i class="fa-solid fa-eye me-1"></i>View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if patients.pages > 1 %}
+    <div class="d-flex justify-content-center mt-4">
+      <nav>
+        <ul class="pagination">
+          {% if patients.has_prev %}
+          <li class="page-item"><a class="page-link" href="?page={{ patients.prev_num }}"><i class="fa-solid fa-chevron-left"></i></a></li>
+          {% endif %}
+          {% for p in patients.iter_pages() %}
+            {% if p %}
+            <li class="page-item {% if p==patients.page %}active{% endif %}">
+              <a class="page-link" href="?page={{ p }}">{{ p }}</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">…</span></li>
+            {% endif %}
+          {% endfor %}
+          {% if patients.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ patients.next_num }}"><i class="fa-solid fa-chevron-right"></i></a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5">
+      <i class="fa-solid fa-user-slash" style="font-size:3rem;color:rgba(255,255,255,.1);margin-bottom:16px;"></i>
+      <p style="color:rgba(255,255,255,.4);">No patients yet. <a href="{{ url_for('assess') }}" style="color:var(--accent);">Run first assessment</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

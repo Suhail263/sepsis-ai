@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Register — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="min-height:85vh;display:flex;align-items:center;justify-content:center;padding:40px 0;">
+  <div style="width:100%;max-width:500px;">
+    <div class="text-center mb-4 fade-in-up">
+      <div style="width:72px;height:72px;border-radius:20px;background:rgba(27,158,119,.15);
+        border:1px solid rgba(27,158,119,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa-solid fa-user-plus" style="font-size:2rem;color:var(--green);"></i>
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;">Create Account</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:.9rem;">Join SepsisAI Clinical System</p>
+    </div>
+
+    <div class="glass-card fade-in-up delay-1">
+      <form method="POST" action="{{ url_for('register') }}">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label"><i class="fa-solid fa-id-card me-2" style="color:var(--green);"></i>Full Name</label>
+            <input type="text" name="full_name" class="form-control" placeholder="Dr. John Smith" required/>
+          </div>
+          <div class="col-12">
+            <label class="form-label"><i class="fa-solid fa-user me-2" style="color:var(--green);"></i>Username</label>
+            <input type="text" name="username" class="form-control" placeholder="Choose a username" required/>
+          </div>
+          <div class="col-12">
+            <label class="form-label"><i class="fa-solid fa-envelope me-2" style="color:var(--green);"></i>Email</label>
+            <input type="email" name="email" class="form-control" placeholder="doctor@hospital.com" required/>
+          </div>
+          <div class="col-12">
+            <label class="form-label"><i class="fa-solid fa-stethoscope me-2" style="color:var(--green);"></i>Role</label>
+            <select name="role" class="form-select">
+              <option value="doctor">Doctor</option>
+              <option value="researcher">Researcher</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label"><i class="fa-solid fa-lock me-2" style="color:var(--green);"></i>Password</label>
+            <input type="password" name="password" class="form-control" placeholder="Create a strong password" required minlength="6"/>
+          </div>
+          <div class="col-12 mt-2">
+            <button type="submit" class="btn-glow w-100 text-center" style="display:block;background:linear-gradient(135deg,var(--green),#0a6b4a);">
+              <i class="fa-solid fa-user-plus me-2"></i>Create Account
+            </button>
+          </div>
+        </div>
+      </form>
+      <div class="divider"></div>
+      <p class="text-center mb-0" style="color:rgba(255,255,255,.5);font-size:.9rem;">
+        Already registered? <a href="{{ url_for('login') }}" style="color:var(--accent);font-weight:600;text-decoration:none;">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

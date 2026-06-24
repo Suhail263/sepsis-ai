@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Assessment Result — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="padding:32px 0 60px;">
+
+  <!-- Risk Header -->
+  <div class="glass-card text-center mb-4 fade-in-up" style="padding:44px;">
+    <div style="font-size:.85rem;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">
+      AI Assessment Result for {{ patient.patient_name }}
+    </div>
+    <div class="risk-badge risk-{{ result.risk_level|lower|replace(' ','-') }} mb-3" style="font-size:1.1rem;padding:12px 28px;margin:0 auto;">
+      <i class="fa-solid {{ result.risk_icon }}"></i>{{ result.risk_level }}
+    </div>
+    <div class="row g-4 mt-2 justify-content-center">
+      {% for label, val, unit, color in [
+        ('Risk Probability', result.risk_percentage, '%', result.risk_color),
+        ('Confidence Score', result.confidence_score, '%', 'var(--gold)'),
+        ('Severity Score', result.severity_score, '/100', '#7c83fd'),
+        ('Prediction Time', result.prediction_time, 's', 'var(--green)')
+      ] %}
+      <div class="col-6 col-md-3">
+        <div class="glass-card-sm text-center" style="border-color:{{ color }}33;">
+          <div style="font-size:2rem;font-weight:800;color:{{ color }};">{{ val }}{{ unit }}</div>
+          <div style="font-size:.78rem;color:rgba(255,255,255,.5);font-weight:500;">{{ label }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="mt-4 p-3" style="background:rgba(30,136,229,.08);border-radius:12px;max-width:700px;margin:16px auto 0;">
+      <p style="color:rgba(255,255,255,.7);font-size:.92rem;margin:0;line-height:1.7;">
+        <i class="fa-solid fa-lightbulb me-2" style="color:var(--gold);"></i>
+        <strong>AI Explanation:</strong> {{ result.explanation }}
+      </p>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-4 fade-in-up delay-1">
+    <div class="col-lg-6">
+      <div class="chart-container h-100">
+        <h6 style="font-weight:700;margin-bottom:16px;">
+          <i class="fa-solid fa-chart-bar me-2" style="color:var(--accent);"></i>Probability Distribution
+        </h6>
+        <canvas id="probChart" style="max-height:240px;"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="chart-container h-100">
+        <h6 style="font-weight:700;margin-bottom:16px;">
+          <i class="fa-solid fa-ranking-star me-2" style="color:var(--gold);"></i>Top Feature Importance
+        </h6>
+        <canvas id="fiChart" style="max-height:240px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dual Treatment -->
+  <div class="row g-4 mb-4">
+
+    <!-- ALLOPATHY -->
+    <div class="col-lg-6 fade-in-up delay-2">
+      <div class="glass-card h-100" style="border-color:rgba(30,136,229,.3);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:rgba(30,136,229,.15);
+            border:1px solid rgba(30,136,229,.3);display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-hospital" style="color:var(--accent);font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:800;font-size:1rem;">Allopathy Recommendation</div>
+            <div style="color:var(--accent);font-size:.82rem;font-weight:600;">{{ result.allopathy.title }}</div>
+          </div>
+        </div>
+
+        {% macro rec_section(icon, color, title, items) %}
+        <div style="margin-bottom:16px;">
+          <div style="font-size:.78rem;color:{{ color }};font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">
+            <i class="fa-solid {{ icon }} me-1"></i>{{ title }}
+          </div>
+          {% for item in items %}
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+            <i class="fa-solid fa-chevron-right" style="color:{{ color }};font-size:.65rem;margin-top:5px;flex-shrink:0;"></i>
+            <span style="font-size:.88rem;color:rgba(255,255,255,.8);line-height:1.5;">{{ item }}</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endmacro %}
+
+        {{ rec_section('fa-book-medical','var(--accent)','Clinical Guidelines', result.allopathy.guidelines) }}
+        {{ rec_section('fa-vial','#7c83fd','Diagnostic Tests', result.allopathy.tests) }}
+        <div style="margin-bottom:16px;">
+          <div style="font-size:.78rem;color:#52c41a;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">
+            <i class="fa-solid fa-user-doctor me-1"></i>Recommended Consultation
+          </div>
+          <div style="background:rgba(82,196,26,.08);border:1px solid rgba(82,196,26,.2);border-radius:10px;padding:10px 14px;
+            font-size:.88rem;font-weight:600;color:#52c41a;">
+            <i class="fa-solid fa-stethoscope me-2"></i>{{ result.allopathy.doctor }}
+          </div>
+        </div>
+        {{ rec_section('fa-triangle-exclamation','#ff6b6b','Emergency Indicators', result.allopathy.emergency) if result.allopathy.emergency }}
+        {{ rec_section('fa-eye','rgba(255,255,255,.5)','Monitoring Advice', result.allopathy.monitoring) }}
+      </div>
+    </div>
+
+    <!-- SIDDHA -->
+    <div class="col-lg-6 fade-in-up delay-3">
+      <div class="glass-card h-100" style="border-color:rgba(201,168,76,.3);">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:rgba(201,168,76,.15);
+            border:1px solid rgba(201,168,76,.3);display:flex;align-items:center;justify-content:center;">
+            <i class="fa-solid fa-leaf" style="color:var(--gold);font-size:1.3rem;"></i>
+          </div>
+          <div>
+            <div style="font-weight:800;font-size:1rem;">Siddha Recommendation</div>
+            <div style="color:var(--gold);font-size:.82rem;font-weight:600;">Traditional Tamil Medicine</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+          <div style="font-size:.78rem;color:var(--gold);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">
+            <i class="fa-solid fa-om me-1"></i>Siddha Interpretation
+          </div>
+          <p style="font-size:.88rem;color:rgba(255,255,255,.75);line-height:1.7;margin:0;
+            background:rgba(201,168,76,.06);border-radius:10px;padding:12px;">
+            {{ result.siddha.interpretation }}
+          </p>
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="font-size:.78rem;color:var(--gold);font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px;">
+            <i class="fa-solid fa-yin-yang me-1"></i>Body Constitution
+          </div>
+          <div style="background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:10px 14px;
+            font-size:.88rem;color:var(--gold);">
+            {{ result.siddha.constitution }}
+          </div>
+        </div>
+
+        {{ rec_section('fa-seedling','var(--green)','Siddha Suggestions', result.siddha.suggestions) }}
+        {{ rec_section('fa-mortar-pestle','#52c41a','Herbal Recommendations', result.siddha.herbs) }}
+        {{ rec_section('fa-utensils','#fdcb6e','Dietary Guidance', result.siddha.diet) }}
+        {{ rec_section('fa-sun','rgba(255,255,255,.5)','Lifestyle Guidance', result.siddha.lifestyle) }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Disclaimer -->
+  <div class="disclaimer mb-4 fade-in-up delay-4">
+    <i class="fa-solid fa-triangle-exclamation me-2"></i>
+    <strong>Medical Disclaimer:</strong> This system provides educational decision-support information only and does not replace licensed medical professionals. Always consult qualified Allopathy and Siddha practitioners for clinical decisions.
+  </div>
+
+  <!-- Actions -->
+  <div class="d-flex gap-3 justify-content-center flex-wrap fade-in-up">
+    <a href="{{ url_for('assess') }}" class="btn-glow">
+      <i class="fa-solid fa-plus me-2"></i>New Assessment
+    </a>
+    <a href="{{ url_for('patients') }}" class="btn-outline-glass">
+      <i class="fa-solid fa-users me-2"></i>All Patients
+    </a>
+    <button onclick="window.print()" class="btn-outline-glass">
+      <i class="fa-solid fa-print me-2"></i>Print Report
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const probData = {{ prob_json|safe }};
+const fiData   = {{ fi_json|safe }};
+Chart.defaults.color='rgba(255,255,255,0.6)';
+Chart.defaults.borderColor='rgba(255,255,255,0.08)';
+const probColors=['#00b894','#fdcb6e','#e17055','#d63031','#b5001f'];
+
+new Chart(document.getElementById('probChart'),{
+  type:'bar',
+  data:{
+    labels:probData.map(d=>d.label),
+    datasets:[{data:probData.map(d=>d.prob),backgroundColor:probColors,
+      borderRadius:8,borderSkipped:false}]
+  },
+  options:{plugins:{legend:{display:false}},scales:{
+    y:{beginAtZero:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.05)'}},
+    x:{grid:{display:false}}
+  }}
+});
+
+new Chart(document.getElementById('fiChart'),{
+  type:'bar',
+  data:{
+    labels:fiData.map(d=>d.feature),
+    datasets:[{data:fiData.map(d=>d.importance),
+      backgroundColor:'rgba(30,136,229,0.7)',borderRadius:6,borderSkipped:false}]
+  },
+  options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{
+    x:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.05)'}},
+    y:{grid:{display:false},ticks:{font:{size:11}}}
+  }}
+});
+</script>
+{% endblock %}

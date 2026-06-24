@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+{% block title %}Patient Assessment — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="padding:32px 0 60px;">
+  <div class="text-center mb-5 fade-in-up">
+    <div class="section-badge"><i class="fa-solid fa-stethoscope"></i> AI Sepsis Assessment</div>
+    <h2 class="section-title">Patient <span class="accent">Clinical Input</span></h2>
+    <p style="color:rgba(255,255,255,.55);">Fill in all available clinical parameters for the most accurate prediction</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('assess') }}" id="assessForm">
+
+    <!-- Patient Info -->
+    <div class="glass-card mb-4 fade-in-up delay-1">
+      <h6 style="color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;">
+        <i class="fa-solid fa-user-injured me-2"></i>Patient Information
+      </h6>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Patient Name</label>
+          <input type="text" name="patient_name" class="form-control" placeholder="Full Name" required/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Age</label>
+          <input type="number" name="age" class="form-control" placeholder="Years" min="1" max="120" required/>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Gender</label>
+          <select name="gender" class="form-select">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vitals -->
+    <div class="glass-card mb-4 fade-in-up delay-2">
+      <h6 style="color:var(--accent);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;">
+        <i class="fa-solid fa-heart-pulse me-2"></i>Vital Signs
+      </h6>
+      <div class="row g-3">
+        {% set vitals = [
+          ('temperature','Body Temperature','°C','37.0','35.0','42.0','0.1','fa-thermometer-half'),
+          ('heart_rate','Heart Rate','bpm','80','20','250','1','fa-heart'),
+          ('respiratory_rate','Respiratory Rate','br/min','16','4','60','1','fa-lungs'),
+          ('systolic_bp','Systolic BP','mmHg','120','50','250','1','fa-gauge'),
+          ('diastolic_bp','Diastolic BP','mmHg','80','20','150','1','fa-gauge-simple'),
+          ('spo2','SpO2','%','98','50','100','0.1','fa-droplet'),
+        ] %}
+        {% for name, label, unit, default, mn, mx, step, icon in vitals %}
+        <div class="col-md-4">
+          <label class="form-label"><i class="fa-solid {{ icon }} me-1" style="color:var(--accent);"></i>{{ label }}</label>
+          <div class="input-group">
+            <input type="number" name="{{ name }}" class="form-control vital-input" data-name="{{ name }}"
+              value="{{ default }}" min="{{ mn }}" max="{{ mx }}" step="{{ step }}" required/>
+            <span class="input-group-text" style="border-radius:0 10px 10px 0!important;">{{ unit }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Lab Values -->
+    <div class="glass-card mb-4 fade-in-up delay-3">
+      <h6 style="color:var(--green);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;">
+        <i class="fa-solid fa-flask me-2"></i>Laboratory Values
+      </h6>
+      <div class="row g-3">
+        {% set labs = [
+          ('blood_sugar','Blood Sugar','mg/dL','100','20','800','1'),
+          ('wbc_count','WBC Count','×10³/μL','8.0','0.1','100','0.1'),
+          ('platelet_count','Platelet Count','×10³/μL','250','10','1000','1'),
+          ('lactate_level','Lactate Level','mmol/L','1.0','0.1','20','0.1'),
+          ('creatinine_level','Creatinine','mg/dL','0.9','0.1','20','0.1'),
+          ('urine_output','Urine Output','mL/hr','60','0','500','1'),
+        ] %}
+        {% for name, label, unit, default, mn, mx, step in labs %}
+        <div class="col-md-4">
+          <label class="form-label"><i class="fa-solid fa-vial me-1" style="color:var(--green);"></i>{{ label }}</label>
+          <div class="input-group">
+            <input type="number" name="{{ name }}" class="form-control" value="{{ default }}" min="{{ mn }}" max="{{ mx }}" step="{{ step }}" required/>
+            <span class="input-group-text" style="border-radius:0 10px 10px 0!important;font-size:.78rem;">{{ unit }}</span>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Clinical Status -->
+    <div class="glass-card mb-4 fade-in-up delay-4">
+      <h6 style="color:#7c83fd;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;">
+        <i class="fa-solid fa-notes-medical me-2"></i>Clinical Status
+      </h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Mental Status</label>
+          <select name="mental_status" class="form-select">
+            <option value="Alert">Alert</option>
+            <option value="Confused">Confused (Verbal)</option>
+            <option value="Lethargic">Lethargic (Pain)</option>
+            <option value="Unconscious">Unconscious</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Suspected Infection Source</label>
+          <select name="infection_source" class="form-select">
+            <option value="Unknown">Unknown</option>
+            <option value="Pulmonary">Pulmonary / Pneumonia</option>
+            <option value="Urinary">Urinary Tract</option>
+            <option value="Abdominal">Abdominal</option>
+            <option value="Skin/Soft Tissue">Skin / Soft Tissue</option>
+            <option value="Bloodstream">Bloodstream (Bacteremia)</option>
+            <option value="CNS">CNS / Meningitis</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Symptoms -->
+    <div class="glass-card mb-5 fade-in-up delay-4">
+      <h6 style="color:#e91e63;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:20px;">
+        <i class="fa-solid fa-clipboard-list me-2"></i>Additional Symptoms
+      </h6>
+      <div class="row g-2">
+        {% set symptoms = [
+          ('fever','Fever','fa-thermometer'),('chills','Chills','fa-snowflake'),
+          ('confusion','Confusion / Delirium','fa-brain'),('rapid_breathing','Rapid Breathing','fa-lungs'),
+          ('low_bp','Low Blood Pressure','fa-gauge'),('fatigue','Severe Fatigue','fa-battery-quarter'),
+          ('vomiting','Nausea / Vomiting','fa-face-dizzy'),('organ_dysfunction','Organ Dysfunction','fa-kit-medical'),
+        ] %}
+        {% for val, label, icon in symptoms %}
+        <div class="col-6 col-md-3">
+          <input type="checkbox" name="symptoms" value="{{ val }}" class="symptom-check" id="sym_{{ val }}"/>
+          <label for="sym_{{ val }}" class="symptom-label">
+            <i class="fa-solid {{ icon }}" style="color:var(--accent);"></i>
+            <span>{{ label }}</span>
+          </label>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Vital Meter -->
+    <div class="glass-card mb-4 fade-in-up" id="vitalMeter" style="display:none;">
+      <h6 style="color:rgba(255,255,255,.7);font-weight:600;margin-bottom:16px;">
+        <i class="fa-solid fa-gauge me-2" style="color:var(--accent);"></i>Live Vitals Status
+      </h6>
+      <div id="vitalAlerts" class="d-flex flex-wrap gap-2"></div>
+    </div>
+
+    <div class="text-center fade-in-up">
+      <button type="submit" class="btn-glow" style="min-width:280px;padding:16px 48px;font-size:1.1rem;" id="submitBtn">
+        <i class="fa-solid fa-brain me-2"></i>Run AI Assessment
+      </button>
+      <p style="color:rgba(255,255,255,.35);font-size:.8rem;margin-top:12px;">
+        Powered by XGBoost + LightGBM + Random Forest Ensemble
+      </p>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const normalRanges = {
+  temperature:  {min:36.1,max:38.2,unit:'°C'},
+  heart_rate:   {min:60,max:100,unit:'bpm'},
+  respiratory_rate:{min:12,max:20,unit:'br/min'},
+  systolic_bp:  {min:90,max:140,unit:'mmHg'},
+  diastolic_bp: {min:60,max:90,unit:'mmHg'},
+  spo2:         {min:95,max:100,unit:'%'},
+};
+function checkVitals(){
+  const alerts=[];
+  document.querySelectorAll('.vital-input').forEach(inp=>{
+    const name=inp.dataset.name,val=parseFloat(inp.value),r=normalRanges[name];
+    if(!r||isNaN(val))return;
+    const label=inp.closest('.col-md-4').querySelector('.form-label').textContent.trim();
+    if(val<r.min)alerts.push({label,val,unit:r.unit,type:'low'});
+    else if(val>r.max)alerts.push({label,val,unit:r.unit,type:'high'});
+  });
+  const el=document.getElementById('vitalAlerts');
+  const meter=document.getElementById('vitalMeter');
+  meter.style.display=alerts.length?'block':'none';
+  el.innerHTML=alerts.map(a=>`
+    <span style="background:${a.type==='high'?'rgba(214,48,49,.15)':'rgba(30,136,229,.15)'};
+      border:1px solid ${a.type==='high'?'rgba(214,48,49,.4)':'rgba(30,136,229,.4)'};
+      color:${a.type==='high'?'#ff6b6b':'#5e97f6'};
+      padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:600;">
+      <i class="fa-solid fa-${a.type==='high'?'arrow-up':'arrow-down'} me-1"></i>
+      ${a.label}: ${a.val} ${a.unit}
+    </span>`).join('');
+}
+document.querySelectorAll('.vital-input').forEach(i=>i.addEventListener('input',checkVitals));
+document.getElementById('assessForm').addEventListener('submit',function(){
+  const btn=document.getElementById('submitBtn');
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin me-2"></i>Analyzing...';
+  btn.disabled=true;
+});
+</script>
+{% endblock %}

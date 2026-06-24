@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Login — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="min-height:85vh;display:flex;align-items:center;justify-content:center;padding:40px 0;">
+  <div style="width:100%;max-width:460px;">
+    <div class="text-center mb-5 fade-in-up">
+      <div style="width:72px;height:72px;border-radius:20px;background:rgba(30,136,229,.15);
+        border:1px solid rgba(30,136,229,.3);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+        <i class="fa-solid fa-heart-pulse" style="font-size:2rem;color:var(--accent);"></i>
+      </div>
+      <h2 style="font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;">Welcome Back</h2>
+      <p style="color:rgba(255,255,255,.5);font-size:.9rem;">Sign in to SepsisAI Clinical System</p>
+    </div>
+
+    <div class="glass-card fade-in-up delay-1">
+      <form method="POST" action="{{ url_for('login') }}">
+        <div class="mb-4">
+          <label class="form-label"><i class="fa-solid fa-user me-2" style="color:var(--accent);"></i>Username</label>
+          <input type="text" name="username" class="form-control" placeholder="Enter your username" required autocomplete="username"/>
+        </div>
+        <div class="mb-4">
+          <label class="form-label"><i class="fa-solid fa-lock me-2" style="color:var(--accent);"></i>Password</label>
+          <input type="password" name="password" class="form-control" placeholder="Enter your password" required autocomplete="current-password"/>
+        </div>
+        <button type="submit" class="btn-glow w-100 text-center" style="display:block;">
+          <i class="fa-solid fa-sign-in-alt me-2"></i>Sign In
+        </button>
+      </form>
+      <div class="divider"></div>
+      <p class="text-center mb-0" style="color:rgba(255,255,255,.5);font-size:.9rem;">
+        Don't have an account? 
+        <a href="{{ url_for('register') }}" style="color:var(--accent);font-weight:600;text-decoration:none;">Register here</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

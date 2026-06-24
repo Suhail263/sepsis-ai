@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}SepsisAI — Early Detection & Dual Treatment System{% endblock %}
+{% block content %}
+
+<!-- Hero -->
+<section style="padding:100px 0 80px;text-align:center;">
+  <div class="container">
+    <div class="fade-in-up">
+      <div class="section-badge"><i class="fa-solid fa-dna"></i> AI-Powered Clinical Decision Support</div>
+      <h1 style="font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:700;line-height:1.2;margin:20px 0;">
+        Early Sepsis Risk<br>
+        <span style="background:linear-gradient(135deg,var(--accent),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+          Detection & Treatment
+        </span>
+      </h1>
+      <p style="font-size:1.15rem;color:rgba(255,255,255,.65);max-width:620px;margin:0 auto 36px;line-height:1.8;">
+        Combining modern Allopathy and ancient Siddha medicine with advanced AI — 
+        XGBoost, LightGBM, and Random Forest ensemble — for comprehensive sepsis management.
+      </p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a href="{{ url_for('register') }}" class="btn-glow">
+          <i class="fa-solid fa-play me-2"></i>Start Assessment
+        </a>
+        <a href="{{ url_for('login') }}" class="btn-outline-glass">
+          <i class="fa-solid fa-sign-in-alt me-2"></i>Sign In
+        </a>
+      </div>
+    </div>
+
+    <!-- Live indicators -->
+    <div class="row g-3 mt-5 justify-content-center">
+      {% for icon, val, label, col in [
+        ('fa-brain','98.2%','Model Accuracy','var(--accent)'),
+        ('fa-bolt','< 2s','Prediction Time','var(--gold)'),
+        ('fa-leaf','Siddha','Integrated Medicine','var(--green)'),
+        ('fa-shield-halved','HIPAA','Privacy Ready','#7c83fd')
+      ] %}
+      <div class="col-6 col-md-3">
+        <div class="glass-card text-center" style="padding:20px;">
+          <i class="fa-solid {{ icon }} mb-2" style="font-size:1.6rem;color:{{ col }};"></i>
+          <div style="font-size:1.5rem;font-weight:800;color:{{ col }};">{{ val }}</div>
+          <div style="font-size:.8rem;color:rgba(255,255,255,.5);">{{ label }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section style="padding:60px 0;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <div class="section-badge"><i class="fa-solid fa-star"></i> Core Features</div>
+      <h2 class="section-title">Comprehensive <span class="accent">Clinical Intelligence</span></h2>
+    </div>
+    <div class="row g-4">
+      {% set features = [
+        ('fa-heart-pulse','Sepsis Risk Assessment','5-tier risk classification from No Sepsis to Critical with real-time probability scoring','var(--accent)'),
+        ('fa-pills','Allopathy Guidance','Evidence-based clinical guidelines, diagnostic tests, and emergency indicators per risk level','#7c83fd'),
+        ('fa-leaf','Siddha Medicine','Traditional Tamil Siddha interpretation, herbal recommendations, and constitution analysis','var(--green)'),
+        ('fa-chart-bar','Explainable AI','SHAP-powered feature importance revealing exactly why the prediction was generated','var(--gold)'),
+        ('fa-gauge-high','Real-time Dashboard','Visual analytics with risk distribution charts, trend analysis, and patient monitoring','#fd7e14'),
+        ('fa-users','Multi-role Access','Admin, Doctor, and Researcher roles with secure authentication and activity logging','#e91e63')
+      ] %}
+      {% for icon, title, desc, color in features %}
+      <div class="col-md-6 col-lg-4">
+        <div class="glass-card h-100">
+          <div style="width:52px;height:52px;border-radius:14px;background:{{ color }}22;
+            display:flex;align-items:center;justify-content:center;margin-bottom:16px;">
+            <i class="fa-solid {{ icon }}" style="color:{{ color }};font-size:1.3rem;"></i>
+          </div>
+          <h5 style="font-weight:700;margin-bottom:10px;">{{ title }}</h5>
+          <p style="color:rgba(255,255,255,.6);font-size:.9rem;line-height:1.7;margin:0;">{{ desc }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- Dual Medicine Section -->
+<section style="padding:60px 0;">
+  <div class="container">
+    <div class="row g-4 align-items-center">
+      <div class="col-lg-6">
+        <div class="section-badge"><i class="fa-solid fa-flask"></i> Dual Treatment System</div>
+        <h2 class="section-title mb-4">Allopathy <span class="accent">+</span> Siddha</h2>
+        <p style="color:rgba(255,255,255,.65);line-height:1.9;margin-bottom:24px;">
+          Our unique dual-recommendation engine bridges modern evidence-based medicine 
+          with the 5,000-year-old Siddha healing tradition of Tamil Nadu, providing 
+          holistic care pathways for every risk level.
+        </p>
+        <div class="d-flex flex-column gap-3">
+          {% for label, desc, icon in [
+            ('Allopathy','Clinical protocols, antibiotics, vasopressors, ICU care','fa-hospital'),
+            ('Siddha','Dosha analysis, Nilavembu, herbal kadha, dietary guidance','fa-seedling'),
+            ('Integrated','Both systems working together for holistic recovery','fa-infinity')
+          ] %}
+          <div class="d-flex gap-3 align-items-start">
+            <div style="width:40px;height:40px;border-radius:10px;background:var(--glass);
+              border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fa-solid {{ icon }}" style="color:var(--gold);"></i>
+            </div>
+            <div>
+              <div style="font-weight:600;">{{ label }}</div>
+              <div style="color:rgba(255,255,255,.55);font-size:.88rem;">{{ desc }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="glass-card" style="padding:36px;">
+          <h6 style="color:var(--gold);font-weight:700;margin-bottom:20px;letter-spacing:1px;text-transform:uppercase;">
+            <i class="fa-solid fa-vials me-2"></i>Risk Classification System
+          </h6>
+          {% for level, pct, color in [
+            ('No Sepsis',15,'#00b894'),('Mild Risk',35,'#fdcb6e'),
+            ('Moderate Risk',60,'#e17055'),('High Risk',80,'#d63031'),('Critical Risk',95,'#b5001f')
+          ] %}
+          <div class="mb-3">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:.88rem;font-weight:500;">{{ level }}</span>
+              <span style="font-size:.82rem;color:{{ color }};">{{ pct }}%+ risk</span>
+            </div>
+            <div class="progress" style="height:6px;">
+              <div class="progress-bar" style="width:{{ pct }}%;background:{{ color }};"></div>
+            </div>
+          </div>
+          {% endfor %}
+          <div class="disclaimer mt-4">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>
+            This system provides educational decision-support information only and does not replace licensed medical professionals.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding:60px 0 80px;">
+  <div class="container text-center">
+    <div class="glass-card" style="padding:56px;max-width:700px;margin:0 auto;">
+      <i class="fa-solid fa-heart-pulse" style="font-size:3rem;color:var(--accent);margin-bottom:20px;"></i>
+      <h2 class="section-title mb-3">Ready to Save Lives?</h2>
+      <p style="color:rgba(255,255,255,.6);margin-bottom:32px;">
+        Start using AI-powered sepsis risk assessment in minutes. No complex setup required.
+      </p>
+      <a href="{{ url_for('register') }}" class="btn-glow">
+        <i class="fa-solid fa-rocket me-2"></i>Create Free Account
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

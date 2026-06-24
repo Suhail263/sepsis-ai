@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SepsisAI{% endblock %}
+{% block content %}
+<div class="container-fluid" style="padding:32px 24px;">
+
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-4 fade-in-up">
+    <div>
+      <div class="section-badge"><i class="fa-solid fa-gauge-high"></i> Clinical Dashboard</div>
+      <h2 class="section-title">Welcome, <span class="accent">{{ session.full_name or session.username }}</span></h2>
+    </div>
+    <a href="{{ url_for('assess') }}" class="btn-glow">
+      <i class="fa-solid fa-plus me-2"></i>New Assessment
+    </a>
+  </div>
+
+  <!-- Stat cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3 fade-in-up delay-1">
+      <div class="stat-card blue">
+        <i class="fa-solid fa-users stat-icon"></i>
+        <div class="stat-number" style="color:var(--accent);">{{ total_patients }}</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 fade-in-up delay-2">
+      <div class="stat-card gold">
+        <i class="fa-solid fa-brain stat-icon"></i>
+        <div class="stat-number" style="color:var(--gold);">{{ total_preds }}</div>
+        <div class="stat-label">Predictions Made</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 fade-in-up delay-3">
+      <div class="stat-card red">
+        <i class="fa-solid fa-triangle-exclamation stat-icon"></i>
+        <div class="stat-number" style="color:#ff6b6b;">{{ high_risk }}</div>
+        <div class="stat-label">High Risk Cases</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3 fade-in-up delay-4">
+      <div class="stat-card green">
+        <i class="fa-solid fa-leaf stat-icon"></i>
+        <div class="stat-number" style="color:var(--green);">{{ session.role|capitalize }}</div>
+        <div class="stat-label">Access Level</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-5 fade-in-up delay-1">
+      <div class="chart-container h-100">
+        <h6 style="font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.8);">
+          <i class="fa-solid fa-pie-chart me-2" style="color:var(--accent);"></i>Risk Distribution
+        </h6>
+        <canvas id="riskPieChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-7 fade-in-up delay-2">
+      <div class="chart-container h-100">
+        <h6 style="font-weight:700;margin-bottom:16px;color:rgba(255,255,255,.8);">
+          <i class="fa-solid fa-chart-area me-2" style="color:var(--gold);"></i>Monthly Prediction Trend
+        </h6>
+        <canvas id="trendChart" style="max-height:260px;"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Patients -->
+  <div class="glass-card fade-in-up delay-3">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+      <h6 style="font-weight:700;margin:0;"><i class="fa-solid fa-clock-rotate-left me-2" style="color:var(--accent);"></i>Recent Assessments</h6>
+      <a href="{{ url_for('patients') }}" style="color:var(--accent);font-size:.85rem;text-decoration:none;font-weight:500;">View All <i class="fa-solid fa-arrow-right ms-1"></i></a>
+    </div>
+    {% if recent %}
+    <div class="table-responsive">
+      <table class="table table-glass mb-0">
+        <thead>
+          <tr>
+            <th>Patient</th><th>Age/Gender</th><th>Risk Level</th>
+            <th>Risk %</th><th>Confidence</th><th>Date</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pat, pred in recent %}
+          <tr>
+            <td style="font-weight:600;">{{ pat.patient_name }}</td>
+            <td style="color:rgba(255,255,255,.6);">{{ pat.age }}y / {{ pat.gender }}</td>
+            <td>
+              {% set risk_map = {'No Sepsis':'risk-none','Mild Risk':'risk-mild','Moderate Risk':'risk-moderate','High Risk':'risk-high','Critical Risk':'risk-critical'} %}
+              <span class="risk-badge {{ risk_map.get(pred.risk_level, 'risk-none') }}" style="font-size:.78rem;padding:4px 12px;">
+                {{ pred.risk_level }}
+              </span>
+            </td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress flex-grow-1" style="height:5px;min-width:60px;">
+                  <div class="progress-bar" style="width:{{ pred.risk_percentage }}%;background:var(--accent);"></div>
+                </div>
+                <span style="font-size:.82rem;font-weight:600;">{{ "%.1f"|format(pred.risk_percentage) }}%</span>
+              </div>
+            </td>
+            <td style="color:var(--gold);font-weight:600;">{{ "%.1f"|format(pred.confidence_score) }}%</td>
+            <td style="color:rgba(255,255,255,.5);font-size:.82rem;">{{ pred.created_at.strftime('%d %b %Y') }}</td>
+            <td><a href="{{ url_for('patient_detail', pid=pat.id) }}" class="btn-outline-glass" style="padding:4px 12px;font-size:.78rem;">View</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+      <i class="fa-solid fa-inbox" style="font-size:3rem;color:rgba(255,255,255,.15);margin-bottom:16px;"></i>
+      <p style="color:rgba(255,255,255,.4);">No assessments yet. <a href="{{ url_for('assess') }}" style="color:var(--accent);">Start your first assessment</a></p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const riskData = {{ risk_counts|safe }};
+const monthlyData = {{ monthly|safe }};
+const labels = Object.keys(riskData);
+const vals   = Object.values(riskData);
+const colors = ['#00b894','#fdcb6e','#e17055','#d63031','#b5001f'];
+
+Chart.defaults.color = 'rgba(255,255,255,0.6)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.08)';
+
+new Chart(document.getElementById('riskPieChart'), {
+  type:'doughnut',
+  data:{labels,datasets:[{data:vals,backgroundColor:colors,borderWidth:0,hoverOffset:8}]},
+  options:{plugins:{legend:{position:'bottom',labels:{padding:16,font:{size:12}}}},cutout:'65%'}
+});
+
+new Chart(document.getElementById('trendChart'), {
+  type:'line',
+  data:{
+    labels: monthlyData.map(m=>m.month),
+    datasets:[{
+      label:'Predictions',data: monthlyData.map(m=>m.count),
+      borderColor:'#1e88e5',backgroundColor:'rgba(30,136,229,0.1)',
+      tension:.4,fill:true,pointBackgroundColor:'#1e88e5',pointRadius:5,pointHoverRadius:8
+    }]
+  },
+  options:{scales:{y:{beginAtZero:true,grid:{color:'rgba(255,255,255,0.05)'}},x:{grid:{display:false}}},
+    plugins:{legend:{display:false}}}
+});
+</script>
+{% endblock %}

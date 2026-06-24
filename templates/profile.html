@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Profile — SepsisAI{% endblock %}
+{% block content %}
+<div class="container" style="padding:32px 0 60px;max-width:600px;">
+  <div class="text-center mb-4 fade-in-up">
+    <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--primary));
+      display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:2rem;font-weight:800;color:#fff;">
+      {{ (user.full_name or user.username)[0].upper() }}
+    </div>
+    <h3 style="font-weight:700;">{{ user.full_name or user.username }}</h3>
+    <span class="risk-badge risk-none" style="font-size:.8rem;">{{ user.role|capitalize }}</span>
+  </div>
+
+  <div class="glass-card fade-in-up delay-1">
+    <h6 style="font-weight:700;margin-bottom:20px;"><i class="fa-solid fa-user-edit me-2" style="color:var(--accent);"></i>Update Profile</h6>
+    <form method="POST" action="{{ url_for('profile') }}">
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="full_name" class="form-control" value="{{ user.full_name or '' }}"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Username (read-only)</label>
+        <input type="text" class="form-control" value="{{ user.username }}" readonly style="opacity:.5;"/>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Email (read-only)</label>
+        <input type="email" class="form-control" value="{{ user.email }}" readonly style="opacity:.5;"/>
+      </div>
+      <div class="divider"></div>
+      <h6 style="font-weight:700;margin-bottom:16px;"><i class="fa-solid fa-key me-2" style="color:var(--gold);"></i>Change Password</h6>
+      <div class="mb-4">
+        <label class="form-label">New Password (leave blank to keep current)</label>
+        <input type="password" name="new_password" class="form-control" placeholder="Enter new password" minlength="6"/>
+      </div>
+      <button type="submit" class="btn-glow w-100" style="display:block;text-align:center;">
+        <i class="fa-solid fa-save me-2"></i>Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}SepsisAI — Early Detection System{% endblock %}</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --primary:#0a2463;--accent:#1e88e5;--gold:#c9a84c;--green:#1b9e77;
+  --critical:#b5001f;--high:#d63031;--moderate:#e17055;--mild:#fdcb6e;--none:#00b894;
+  --glass:rgba(255,255,255,0.08);--glass-border:rgba(255,255,255,0.15);
+  --dark-bg:#050d1f;--card-bg:rgba(10,36,99,0.45);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--dark-bg);color:#e8edf7;min-height:100vh;overflow-x:hidden;}
+
+/* ── Animated BG ── */
+body::before{content:'';position:fixed;inset:0;
+  background:linear-gradient(135deg,#050d1f 0%,#0a2463 40%,#071a40 70%,#050d1f 100%);z-index:-2;}
+.bg-orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none;}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18;animation:float 12s ease-in-out infinite;}
+.orb-1{width:600px;height:600px;background:radial-gradient(circle,#1e88e5,transparent);top:-100px;left:-100px;}
+.orb-2{width:500px;height:500px;background:radial-gradient(circle,#c9a84c,transparent);bottom:-100px;right:-100px;animation-delay:-5s;}
+.orb-3{width:400px;height:400px;background:radial-gradient(circle,#1b9e77,transparent);top:40%;left:50%;animation-delay:-3s;}
+@keyframes float{0%,100%{transform:translateY(0) scale(1);}50%{transform:translateY(-30px) scale(1.05);}}
+
+/* ── Navbar ── */
+.navbar{background:rgba(5,13,31,0.85)!important;backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-border);padding:12px 0;}
+.navbar-brand{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.navbar-brand span{color:var(--accent);-webkit-text-fill-color:var(--accent);}
+.nav-link{color:rgba(255,255,255,0.75)!important;font-weight:500;transition:.3s;padding:8px 16px!important;border-radius:8px;}
+.nav-link:hover,.nav-link.active{color:#fff!important;background:var(--glass);}
+.nav-link i{margin-right:6px;}
+.btn-nav-cta{background:linear-gradient(135deg,var(--accent),var(--primary));border:none;
+  padding:8px 20px;border-radius:50px;font-weight:600;color:#fff!important;}
+
+/* ── Glass Cards ── */
+.glass-card{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);
+  border-radius:20px;padding:28px;transition:.3s;}
+.glass-card:hover{border-color:rgba(30,136,229,0.4);box-shadow:0 8px 32px rgba(30,136,229,0.15);}
+.glass-card-sm{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--glass-border);
+  border-radius:14px;padding:20px;}
+
+/* ── Stat cards ── */
+.stat-card{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);
+  border-radius:18px;padding:24px;position:relative;overflow:hidden;transition:.3s;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--accent),#5e97f6);}
+.stat-card.gold::before{background:linear-gradient(90deg,var(--gold),#e6c97a);}
+.stat-card.green::before{background:linear-gradient(90deg,var(--green),#52c41a);}
+.stat-card.red::before{background:linear-gradient(90deg,var(--critical),#ff4d4f);}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,0.4);}
+.stat-number{font-size:2.4rem;font-weight:800;line-height:1;}
+.stat-label{font-size:.85rem;color:rgba(255,255,255,.6);font-weight:500;margin-top:6px;}
+.stat-icon{font-size:2.5rem;opacity:.2;position:absolute;right:20px;top:50%;transform:translateY(-50%);}
+
+/* ── Form styling ── */
+.form-control,.form-select{background:rgba(255,255,255,.06)!important;border:1px solid rgba(255,255,255,.12)!important;
+  color:#e8edf7!important;border-radius:10px;padding:12px 16px;transition:.3s;}
+.form-control:focus,.form-select:focus{background:rgba(255,255,255,.1)!important;
+  border-color:var(--accent)!important;box-shadow:0 0 0 3px rgba(30,136,229,.2)!important;outline:none;}
+.form-control::placeholder{color:rgba(255,255,255,.35)!important;}
+.form-select option{background:#0a2463;color:#e8edf7;}
+.form-label{font-weight:500;font-size:.9rem;color:rgba(255,255,255,.8);margin-bottom:6px;}
+.input-group-text{background:rgba(30,136,229,.15)!important;border:1px solid rgba(255,255,255,.12)!important;
+  color:var(--accent)!important;border-radius:10px 0 0 10px;}
+
+/* ── Buttons ── */
+.btn-glow{background:linear-gradient(135deg,var(--accent),#1565c0);border:none;color:#fff;
+  padding:14px 36px;border-radius:50px;font-weight:700;font-size:1.05rem;
+  box-shadow:0 4px 24px rgba(30,136,229,.4);transition:.3s;letter-spacing:.5px;}
+.btn-glow:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(30,136,229,.6);color:#fff;}
+.btn-gold{background:linear-gradient(135deg,var(--gold),#8b6914);border:none;color:#fff;
+  padding:12px 28px;border-radius:50px;font-weight:600;transition:.3s;}
+.btn-gold:hover{transform:translateY(-2px);color:#fff;}
+.btn-outline-glass{background:transparent;border:1px solid var(--glass-border);color:#e8edf7;
+  padding:10px 24px;border-radius:50px;transition:.3s;}
+.btn-outline-glass:hover{background:var(--glass);color:#fff;border-color:var(--accent);}
+
+/* ── Section headings ── */
+.section-badge{display:inline-flex;align-items:center;gap:8px;
+  background:rgba(30,136,229,.15);border:1px solid rgba(30,136,229,.3);
+  color:var(--accent);font-size:.8rem;font-weight:600;letter-spacing:1px;text-transform:uppercase;
+  padding:6px 16px;border-radius:50px;margin-bottom:16px;}
+.section-title{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;
+  background:linear-gradient(135deg,#fff,rgba(255,255,255,.7));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.section-title .accent{-webkit-text-fill-color:var(--gold);}
+
+/* ── Risk badges ── */
+.risk-badge{display:inline-flex;align-items:center;gap:8px;font-weight:700;
+  padding:8px 20px;border-radius:50px;font-size:.95rem;}
+.risk-none{background:rgba(0,184,148,.15);color:#00b894;border:1px solid rgba(0,184,148,.3);}
+.risk-mild{background:rgba(253,203,110,.15);color:#fdcb6e;border:1px solid rgba(253,203,110,.3);}
+.risk-moderate{background:rgba(225,112,85,.15);color:#e17055;border:1px solid rgba(225,112,85,.3);}
+.risk-high{background:rgba(214,48,49,.15);color:#d63031;border:1px solid rgba(214,48,49,.3);}
+.risk-critical{background:rgba(181,0,31,.2);color:#ff6b6b;border:1px solid rgba(181,0,31,.4);animation:pulse-red 1.5s infinite;}
+@keyframes pulse-red{0%,100%{box-shadow:0 0 0 0 rgba(181,0,31,.4);}50%{box-shadow:0 0 0 10px rgba(181,0,31,0);}}
+
+/* ── Progress bars ── */
+.progress{background:rgba(255,255,255,.06);border-radius:50px;overflow:visible;}
+.progress-bar{border-radius:50px;position:relative;}
+
+/* ── Symptom checkboxes ── */
+.symptom-check{display:none;}
+.symptom-label{display:flex;align-items:center;gap:8px;padding:10px 16px;
+  background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;
+  cursor:pointer;transition:.3s;font-size:.9rem;}
+.symptom-label:hover{border-color:var(--accent);background:rgba(30,136,229,.1);}
+.symptom-check:checked+.symptom-label{border-color:var(--accent);background:rgba(30,136,229,.2);color:var(--accent);}
+.symptom-label .dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0;}
+
+/* ── Alert / Flash ── */
+.alert-glass{background:var(--glass);backdrop-filter:blur(10px);border-radius:12px;border:1px solid var(--glass-border);}
+
+/* ── Tables ── */
+.table-glass{color:#e8edf7;}
+.table-glass th{background:rgba(30,136,229,.15);font-weight:600;font-size:.85rem;letter-spacing:.5px;text-transform:uppercase;border-color:var(--glass-border)!important;}
+.table-glass td{border-color:rgba(255,255,255,.06)!important;padding:12px 16px;vertical-align:middle;}
+.table-glass tbody tr:hover{background:var(--glass);}
+
+/* ── Sidebar ── */
+.sidebar{background:rgba(5,13,31,.9);backdrop-filter:blur(20px);border-right:1px solid var(--glass-border);
+  min-height:calc(100vh - 70px);padding:24px 0;}
+.sidebar-link{display:flex;align-items:center;gap:12px;padding:12px 24px;color:rgba(255,255,255,.65);
+  font-weight:500;transition:.3s;border-left:3px solid transparent;text-decoration:none;}
+.sidebar-link:hover,.sidebar-link.active{color:#fff;background:rgba(30,136,229,.1);border-left-color:var(--accent);}
+.sidebar-link i{width:20px;text-align:center;}
+
+/* ── Chart containers ── */
+.chart-container{position:relative;background:var(--glass);backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border);border-radius:16px;padding:20px;}
+
+/* ── Pagination ── */
+.page-link{background:var(--glass)!important;border-color:var(--glass-border)!important;color:#e8edf7!important;}
+.page-item.active .page-link{background:var(--accent)!important;border-color:var(--accent)!important;}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(30,136,229,.4);border-radius:3px;}
+
+/* ── Divider ── */
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--glass-border),transparent);margin:24px 0;}
+
+/* ── Footer ── */
+footer{background:rgba(5,13,31,.95);border-top:1px solid var(--glass-border);padding:24px 0;margin-top:60px;}
+
+/* ── Animations ── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.fade-in-up{animation:fadeInUp .5s ease forwards;}
+.delay-1{animation-delay:.1s;opacity:0;}
+.delay-2{animation-delay:.2s;opacity:0;}
+.delay-3{animation-delay:.3s;opacity:0;}
+.delay-4{animation-delay:.4s;opacity:0;}
+
+/* ── Disclaimer ── */
+.disclaimer{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.05));
+  border:1px solid rgba(201,168,76,.3);border-radius:14px;padding:18px 24px;
+  color:rgba(255,255,255,.8);font-size:.88rem;}
+.disclaimer i{color:var(--gold);}
+
+@media(max-width:768px){
+  .stat-number{font-size:1.8rem;}
+  .section-title{font-size:1.5rem;}
+  .btn-glow{padding:12px 24px;font-size:.95rem;}
+}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="bg-orbs"><div class="orb orb-1"></div><div class="orb orb-2"></div><div class="orb orb-3"></div></div>
+
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <a class="navbar-brand" href="{{ url_for('index') }}">
+      <i class="fa-solid fa-heart-pulse me-2" style="color:var(--accent);-webkit-text-fill-color:var(--accent);font-size:1.2rem;"></i>
+      Sepsis<span>AI</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+      style="border-color:var(--glass-border);"><span class="navbar-toggler-icon" style="filter:invert(1);"></span></button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-lg-center gap-1">
+        {% if session.user_id %}
+        <li class="nav-item"><a class="nav-link {% if request.endpoint=='dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}"><i class="fa-solid fa-gauge-high"></i>Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.endpoint=='assess' %}active{% endif %}" href="{{ url_for('assess') }}"><i class="fa-solid fa-stethoscope"></i>Assess</a></li>
+        <li class="nav-item"><a class="nav-link {% if request.endpoint=='patients' %}active{% endif %}" href="{{ url_for('patients') }}"><i class="fa-solid fa-users"></i>Patients</a></li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+            <i class="fa-solid fa-user-circle"></i>{{ session.full_name or session.username }}
+          </a>
+          <ul class="dropdown-menu" style="background:rgba(10,36,99,.95);backdrop-filter:blur(20px);border-color:var(--glass-border);">
+            <li><a class="dropdown-item" style="color:#e8edf7;" href="{{ url_for('profile') }}"><i class="fa-solid fa-user me-2"></i>Profile</a></li>
+            <li><hr class="dropdown-divider" style="border-color:var(--glass-border);"></li>
+            <li><a class="dropdown-item" style="color:#ff6b6b;" href="{{ url_for('logout') }}"><i class="fa-solid fa-sign-out-alt me-2"></i>Logout</a></li>
+          </ul>
+        </li>
+        {% else %}
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('login') }}">Login</a></li>
+        <li class="nav-item"><a class="nav-link btn-nav-cta ms-2" href="{{ url_for('register') }}">Get Started</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="container mt-3">
+{% for cat, msg in messages %}
+<div class="alert alert-glass alert-dismissible fade show" style="color:{% if cat=='success' %}#00b894{% elif cat=='danger' %}#ff6b6b{% elif cat=='warning' %}#fdcb6e{% else %}var(--accent){% endif %};border-left:3px solid currentColor;">
+  <i class="fa-solid fa-{% if cat=='success' %}check-circle{% elif cat=='danger' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>{{ msg }}
+  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>
+</div>{% endfor %}
+</div>{% endif %}{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  <div class="container text-center">
+    <p style="color:rgba(255,255,255,.4);font-size:.85rem;">
+      <i class="fa-solid fa-heart-pulse me-2" style="color:var(--accent);"></i>
+      SepsisAI &copy; 2024 — Early Sepsis Risk Assessment & Dual Treatment System
+    </p>
+    <p style="color:rgba(255,255,255,.3);font-size:.78rem;margin-top:6px;">
+      For educational and clinical decision-support use only. Not a substitute for licensed medical professionals.
+    </p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
