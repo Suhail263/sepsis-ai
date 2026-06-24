@@ -6,12 +6,12 @@ Flask-WTF==1.2.1
 PyMySQL==1.1.0
 cryptography==41.0.4
 Werkzeug==2.3.7
-scikit-learn==1.2.2
-scipy==1.10.1
+scikit-learn==1.4.2
+scipy==1.12.0
 xgboost==2.0.2
 # lightgbm==4.1.0
-catboost==1.2.2
-numpy==1.24.4
+catboost==1.2.5
+numpy==1.26.4
 pandas==2.2.2
 matplotlib==3.9.0
 seaborn==0.13.0
